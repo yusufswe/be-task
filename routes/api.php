@@ -11,5 +11,6 @@ Route::post('/login', action: [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/divisions', action: [DivisionController::class, 'index']);
     Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::post('/employees', [EmployeeController::class, 'addEmployee']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -53,6 +54,41 @@ class EmployeeController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to retrieve employees',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function addEmployee(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'image' => 'nullable|url',
+                'name' => 'required|string|max:255',
+                'phone' => 'required|string|max:20',
+                'division' => 'required|uuid|exists:divisions,id',
+                'position' => 'required|string|max:255',
+
+            ]);
+
+            Employee::create([
+                'id' => Str::uuid(),
+                'image' => $validatedData['image'],
+                'name' => $validatedData['name'],
+                'phone' => $validatedData['phone'],
+                'division_id' => $validatedData['division'],
+                'position' => $validatedData['position'],
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee added successfully',
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to add employee',
                 'error' => $e->getMessage(),
             ], 500);
         }
