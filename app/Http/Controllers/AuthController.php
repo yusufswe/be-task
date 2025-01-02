@@ -19,7 +19,7 @@ class AuthController extends Controller
 
             $user = User::where('username', $credentials['username'])->first();
 
-            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            if (!$user || !Hash::check(value: $credentials['password'], hashedValue: $user->password)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Invalid username or password',
@@ -58,6 +58,25 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'An error occurred during login',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json([
+                'status' => 'succcess',
+                'message' => 'Logout successful'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Logout error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occured during logout',
                 'error' => $e->getMessage()
             ], 500);
         }
