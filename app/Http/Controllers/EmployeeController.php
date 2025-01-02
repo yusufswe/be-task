@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 class EmployeeController extends Controller
 {
@@ -93,4 +94,49 @@ class EmployeeController extends Controller
             ], 500);
         }
     }
+
+    public function updateEmployee(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'image' => 'nullable|url',
+                'name' => 'required|string|max:255',
+                'phone' => 'required|string|max:20',
+                'division' => 'required|uuid|exists:divisions,id',
+                'position' => 'required|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $employee = Employee::findOrFail($id);
+
+            $employee->update([
+                'image' => $request->image,
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'division_id' => $request->division,
+                'position' => $request->position,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee updated successfully',
+            ]);
+
+        } catch (\Exception $e) {
+            // Handle error
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while updating employee',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
